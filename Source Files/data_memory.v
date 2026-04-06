@@ -39,3 +39,4 @@ module data_memory(
     assign rd = mem[addr[6:2]];
 
 endmodule
+
