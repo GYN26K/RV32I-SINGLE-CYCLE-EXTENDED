@@ -82,7 +82,7 @@ The base RISC-V instruction set is mapped into a unique **5-bit instruction iden
 Ensure AMD Xilinx Vivado (v2024.2 recommended) is correctly installed and sourced in your system path environment.
 
 ```bash
-git clone <your_repository_link>
+git clone https://github.com/GYN26K/RV32I-SINGLE-CYCLE-EXTENDED
 cd GYN26K/tcl_files
 ```
 
