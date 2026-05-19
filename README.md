@@ -11,11 +11,11 @@ A RISC-V RV32I Single Cycle Extended Processor implemented in Verilog and automa
 * **FPGA Resource Mapping:** Peripheral support including Seven Segment Display routing.
 * **Portable Structure:** Uses relative paths across scripts for seamless execution across different systems.
 
----
+
 
 ## Project Structure
 
-```text
+
 RV32I-SINGLE-CYCLE-EXTENDED/
 ├── source_files/          # Verilog RTL Source Code (.v)
 ├── constraint_files/      # Physical Constraints & Pin Mapping (.xdc)
