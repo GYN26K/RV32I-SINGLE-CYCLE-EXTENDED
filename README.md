@@ -15,7 +15,7 @@ A RISC-V RV32I Single Cycle Extended Processor implemented in Verilog and automa
 
 ## Project Structure
 
-
+```text
 RV32I-SINGLE-CYCLE-EXTENDED/
 ├── source_files/          # Verilog RTL Source Code (.v)
 ├── constraint_files/      # Physical Constraints & Pin Mapping (.xdc)
@@ -23,10 +23,10 @@ RV32I-SINGLE-CYCLE-EXTENDED/
 ├── results/               # Extracted Timing/Utilization Reports & Screenshots
 ├── .gitignore             # Git exclusion rules for auto-generated files
 └── README.md              # Project Documentation
-
+```
 > **Note:** The `build/` directory and volatile Vivado environment logs (`.log`, `.jou`, `.Xil/`) are intentionally omitted from version control tracking via `.gitignore` to maintain a lean repository footprint.
 
----
+
 
 ## Instruction Encoding Strategy
 
