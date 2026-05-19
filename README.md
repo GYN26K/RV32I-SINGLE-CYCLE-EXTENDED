@@ -1,16 +1,15 @@
-```markdown
-# Extended 32-Instruction RISC-V ISA Design
+# RV32I Single Cycle Extended Processor on FPGA
 
-A custom 32-instruction RISC-V processor architecture engineered with a simplified 5-bit instruction identification scheme. The single-cycle architecture balances decoded control logic constraints with execution support for essential arithmetic, logical, memory, and control operational blocks mapped to FPGA hardware.
+A RISC-V RV32I Single Cycle Extended Processor implemented in Verilog and automated using TCL scripting in AMD Xilinx Vivado.
 
 ---
 
 ## Features
 
-* **Custom 5-Bit ISA Encoding:** Tailored 5-bit identifiers for streamlined instruction decoding, maximizing the $2^5 = 32$ instruction address space.
-* **Single-Cycle Datapath:** Direct instruction execution executing Instruction Fetch, Decode, Execute, Memory, and Writeback stages concurrently within a single clock period.
-* **On-Chip Peripheral Support:** Multiplexed 7-segment display logic integration for real-time visualization of computation cycles on physical hardware.
-* **Automated Vivado Toolchain:** Built with modular Verilog design rules optimized for synthesis, placement, and routing via automation scripts.
+* **RV32I Core:** Single-cycle implementation of the standard RISC-V 32-bit integer base instruction set architecture.
+* **TCL Automation:** Complete Vivado flow from project creation to bitstream generation automated via a single script.
+* **FPGA Resource Mapping:** Peripheral support including Seven Segment Display routing.
+* **Portable Structure:** Uses relative paths across scripts for seamless execution across different systems.
 
 ---
 
@@ -18,14 +17,12 @@ A custom 32-instruction RISC-V processor architecture engineered with a simplifi
 
 ```text
 RV32I-SINGLE-CYCLE-EXTENDED/
-├── design_files/          # Verilog RTL Source Code modules (.v)
+├── source_files/          # Verilog RTL Source Code (.v)
 ├── constraint_files/      # Physical Constraints & Pin Mapping (.xdc)
 ├── tcl_files/             # Vivado Automation Scripts (.tcl)
 ├── results/               # Extracted Timing/Utilization Reports & Screenshots
 ├── .gitignore             # Git exclusion rules for auto-generated files
 └── README.md              # Project Documentation
-
-```
 
 > **Note:** The `build/` directory and volatile Vivado environment logs (`.log`, `.jou`, `.Xil/`) are intentionally omitted from version control tracking via `.gitignore` to maintain a lean repository footprint.
 
