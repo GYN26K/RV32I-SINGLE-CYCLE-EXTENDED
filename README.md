@@ -1,237 +1,238 @@
+```markdown
 # Extended 32-Instruction RISC-V ISA Design
 
-This project extends the base RISC-V instruction set by designing a **custom 32-instruction ISA encoding using 5-bit instruction identifiers**.  
+A custom 32-instruction RISC-V processor architecture engineered with a simplified 5-bit instruction identification scheme. The single-cycle architecture balances decoded control logic constraints with execution support for essential arithmetic, logical, memory, and control operational blocks mapped to FPGA hardware.
 
-The goal is to simplify instruction decoding while maintaining support for essential arithmetic, logical, memory, and control operations.
+---
+
+## Features
+
+* **Custom 5-Bit ISA Encoding:** Tailored 5-bit identifiers for streamlined instruction decoding, maximizing the $2^5 = 32$ instruction address space.
+* **Single-Cycle Datapath:** Direct instruction execution executing Instruction Fetch, Decode, Execute, Memory, and Writeback stages concurrently within a single clock period.
+* **On-Chip Peripheral Support:** Multiplexed 7-segment display logic integration for real-time visualization of computation cycles on physical hardware.
+* **Automated Vivado Toolchain:** Built with modular Verilog design rules optimized for synthesis, placement, and routing via automation scripts.
+
+---
+
+## Project Structure
+
+```text
+RV32I-SINGLE-CYCLE-EXTENDED/
+├── design_files/          # Verilog RTL Source Code modules (.v)
+├── constraint_files/      # Physical Constraints & Pin Mapping (.xdc)
+├── tcl_files/             # Vivado Automation Scripts (.tcl)
+├── results/               # Extracted Timing/Utilization Reports & Screenshots
+├── .gitignore             # Git exclusion rules for auto-generated files
+└── README.md              # Project Documentation
+
+```
+
+> **Note:** The `build/` directory and volatile Vivado environment logs (`.log`, `.jou`, `.Xil/`) are intentionally omitted from version control tracking via `.gitignore` to maintain a lean repository footprint.
 
 ---
 
 ## Instruction Encoding Strategy
 
-- Each instruction is assigned a unique **5-bit ID**
-- Total possible instructions = **2⁵ = 32**
-- Instructions are grouped based on RISC-V formats:
-  - R-type
-  - I-type
-  - Memory (Load/Store)
-  - Branch (B-type)
-  - Jump (J-type)
-
----
-
-## Instruction Set Breakdown
+The base RISC-V instruction set is mapped into a unique **5-bit instruction identifier** field, eliminating multi-stage opcode/funct3/funct7 decoding architectures for standard hardware deployments.
 
 ### R-Type Instructions (10)
 
-| ID | Instruction |
-|----|------------|
-| 0  | ADD        |
-| 1  | SUB        |
-| 2  | AND        |
-| 3  | OR         |
-| 4  | XOR        |
-| 5  | SLL        |
-| 6  | SRL        |
-| 7  | SRA        |
-| 8  | SLT        |
-| 9  | SLTU       |
+Used for register-to-register arithmetic, logic, and directional shift operations.
 
----
+| ID | Instruction | Operational Subtype |
+| --- | --- | --- |
+| 0 | ADD | Two's Complement Addition |
+| 1 | SUB | Two's Complement Subtraction |
+| 2 | AND | Bitwise Logical AND |
+| 3 | OR | Bitwise Logical OR |
+| 4 | XOR | Bitwise Logical Exclusive OR |
+| 5 | SLL | Shift Left Logical |
+| 6 | SRL | Shift Right Logical |
+| 7 | SRA | Shift Right Arithmetic |
+| 8 | SLT | Set Less Than (Signed) |
+| 9 | SLTU | Set Less Than Unsigned |
 
 ### I-Type Instructions (9)
 
-| ID | Instruction |
-|----|------------|
-| 10 | ADDI       |
-| 11 | ANDI       |
-| 12 | ORI        |
-| 13 | XORI       |
-| 14 | SLTI       |
-| 15 | SLTIU      |
-| 16 | SLLI       |
-| 17 | SRLI       |
-| 18 | SRAI       |
+Used for operational instructions involving an immediate value operand.
 
----
+| ID | Instruction | Operational Subtype |
+| --- | --- | --- |
+| 10 | ADDI | Add Immediate |
+| 11 | ANDI | Bitwise AND Immediate |
+| 12 | ORI | Bitwise OR Immediate |
+| 13 | XORI | Bitwise XOR Immediate |
+| 14 | SLTI | Set Less Than Immediate (Signed) |
+| 15 | SLTIU | Set Less Than Immediate Unsigned |
+| 16 | SLLI | Shift Left Logical Immediate |
+| 17 | SRLI | Shift Right Logical Immediate |
+| 18 | SRAI | Shift Right Arithmetic Immediate |
 
 ### Memory Instructions (2)
 
-| ID | Instruction |
-|----|------------|
-| 19 | LW         |
-| 20 | SW         |
+Data transfer operations mapping between register ports and RAM spaces.
 
----
+| ID | Instruction | Operational Subtype |
+| --- | --- | --- |
+| 19 | LW | Load Word from Address |
+| 20 | SW | Store Word to Address |
 
 ### Branch Instructions (6)
 
-| ID | Instruction |
-|----|------------|
-| 21 | BEQ        |
-| 22 | BNE        |
-| 23 | BLT        |
-| 24 | BGE        |
-| 25 | BGEU       |
-| 26 | BLTU       |
+Conditional program control logic operations evaluating programmatic deviations.
 
----
+| ID | Instruction | Operational Subtype |
+| --- | --- | --- |
+| 21 | BEQ | Branch if Equal |
+| 22 | BNE | Branch if Not Equal |
+| 23 | BLT | Branch if Less Than (Signed) |
+| 24 | BGE | Branch if Greater Than or Equal (Signed) |
+| 25 | BGEU | Branch if Greater Than or Equal Unsigned |
+| 26 | BLTU | Branch if Less Than Unsigned |
 
 ### Jump / Upper Instructions (4)
 
-| ID | Instruction |
-|----|------------|
-| 27 | JAL        |
-| 28 | JALR       |
-| 29 | LUI        |
-| 30 | AUIPC      |
+Unconditional jumps and upper-immediate register load configurations.
 
----
-## Architecture Description
-
-### Single-Cycle Design
-
-Each instruction in the processor is executed in a single clock cycle. All stages of instruction execution occur simultaneously:
-
-- Instruction Fetch (IF)
-- Instruction Decode (ID)
-- Execute (EX)
-- Memory Access (MEM)
-- Write Back (WB)
-
-This approach simplifies control logic at the cost of a longer clock period.
+| ID | Instruction | Operational Subtype |
+| --- | --- | --- |
+| 27 | JAL | Jump and Link |
+| 28 | JALR | Jump and Link Register |
+| 29 | LUI | Load Upper Immediate |
+| 30 | AUIPC | Add Upper Immediate to PC |
 
 ---
 
-## Core Components
+## Architectural Block Diagram
 
-### Program Counter (PC)
-- Holds the address of the current instruction
-- Updates every clock cycle based on sequential or control flow instructions
+The single-cycle design relies on data path orchestration managed through dedicated architectural execution components:
 
-### Instruction Memory
-- Stores the program instructions
-- Addressed by the Program Counter
+```text
+       ┌───────────┐      ┌────────────┐      ┌──────────────┐
+  ────►│  Program  ├─────►│Instruction ├─────►│ Instruction  │
+       │Counter(PC)│      │   Memory   │      │ Decode Stage │
+       └─────▲─────┘      └────────────┘      └──────┬───────┘
+             │                                       │
+             │            ┌────────────┐             ▼
+             │            │  Register  │       ┌───────────┐
+             │            │ File (X32) │       │  Control  │
+             │            └─────┬──────┘       │   Unit    │
+             │                  │              └─────┬─────┘
+             │                  ▼                    │
+             │            ┌────────────┐             │
+             │            │ Arithmetic │◄────────────┘
+             │            │ Logic Unit │
+             │            └─────┬──────┘
+             │                  │
+             │                  ▼
+             └────────────[Data Memory]
 
-### Register File
-- Contains 32 general-purpose registers (x0–x31)
-- Supports:
-  - Two read ports
-  - One write port
+```
 
-### Arithmetic Logic Unit (ALU)
-Performs:
-- Arithmetic operations (ADD, SUB)
-- Logical operations (AND, OR, XOR)
-- Shift operations (SLL, SRL, SRA)
-- Comparison operations (SLT, etc.)
-
-### Control Unit
-Generates control signals based on the instruction:
-- RegWrite
-- ALUSrc
-- MemRead
-- MemWrite
-- MemtoReg
-- Branch
-- Jump
-
-### Data Memory
-- Used for load (LW) and store (SW) instructions
+* **Program Counter (PC):** Holds and drives the memory boundary pointer of the active instruction cycle, incrementing sequentially or jumping via conditional evaluation.
+* **Instruction Memory:** Read-only address fabric driving stored micro-code contents to the decode datapath.
+* **Register File:** Fully-dual synchronous port read structure supporting asynchronous single-write configurations for registers `x0` to `x31`.
+* **Arithmetic Logic Unit (ALU):** High-speed functional execution array handling basic arithmetic, logical bit-masks, comparison structures, and data bit-shifts.
+* **Control Unit:** Combinational decode array generating internal system metrics (`RegWrite`, `ALUSrc`, `MemRead`, `MemWrite`, `MemtoReg`, `Branch`, `Jump`).
+* **Data Memory:** Synchronous random access block layout handling storage variables during runtime memory instructions.
 
 ---
 
-## Instruction Set Design
+## Execution Prerequisites
 
-The processor supports a **custom 40-instruction ISA**, extending the base RISC-V instruction set.
-
-### Key Characteristics
-- Uses opcode and function fields for instruction decoding
-- Covers:
-  - Arithmetic operations
-  - Logical operations
-  - Immediate operations
-  - Memory access
-  - Branching
-  - Jump instructions
-
-### Design Approach
-Instead of compressing into a fixed 5-bit encoding:
-- The design retains full instruction diversity
-- Decoding logic is simplified for FPGA implementation
-- Trade-off favors functionality over minimal encoding
+* **Synthesis Toolchain:** AMD Xilinx Vivado Design Suite (Optimized for 2024.2)
+* **OS Target Environment:** Red Hat Enterprise Linux (RHEL) / Windows Subsystem for Linux (WSL)
+* **FPGA Prototyping Target:** Basys 3 Development Board (Artix-7 XC7A35T-1CPG236C)
 
 ---
 
-## Fibonacci Sequence Implementation
+## Execution & Automation Flow
 
-### Objective
-To demonstrate correct processor functionality by generating the Fibonacci sequence:
+### 1. Repository Setup
 
-F(n) = F(n-1) + F(n-2)
+```bash
+git clone <repository_link>
+cd RV32I-SINGLE-CYCLE-EXTENDED
 
-### Register Usage Example
-- x1: First number (0)
-- x2: Second number (1)
-- x3: Result
-- x4: Loop counter
+```
 
-### Execution Flow
+### 2. Vivado Automated Compiling
 
-1. Initialize registers:
-   - x1 = 0
-   - x2 = 1
+Navigate to the operational script directory and execute the TCL pipeline configuration file in headless batch execution mode. Ensure your local environment variables have paths configured for active Vivado binaries.
 
-2. Loop:
-   - ADD x3, x1, x2
-   - Move values:
-     - x1 ← x2
-     - x2 ← x3
-   - Repeat for desired number of iterations
+```bash
+cd tcl_files
+vivado -mode batch -source riscv_singlecycle.tcl
+
+```
 
 ---
 
-## FPGA Implementation
+## Verification: Fibonacci Sequence Implementation
 
-### Target Hardware
-- Basys 3 FPGA Board
+To validate the micro-architecture, the design executes an iterative hardware loop calculating the Fibonacci sequence:
 
-### Output Display
-- 7-segment display used to show Fibonacci numbers
-- Optional use of LEDs for debugging internal states
+$$F(n) = F(n-1) + F(n-2)$$
 
-### Clock Handling
-- A clock divider is used to slow down execution
-- Ensures outputs are human-readable on hardware
+### Internal Register Allocations
 
-### Execution Flow on FPGA
+* `x1`: Current lower term ($F(n-2)$, initialized to `0`)
+* `x2`: Current upper term ($F(n-1)$, initialized to `1`)
+* `x3`: Destination register ($F(n)$ result)
+* `x4`: Operational loop countdown matrix tracker
 
-1. Instructions are loaded into instruction memory
-2. Processor executes instructions sequentially
-3. Fibonacci values are computed
-4. Results are sent to display module
+### Core Code Progression
 
----
+1. **Initialization:** Load absolute boundary states into immediate storage.
+2. **Loop Computation:** Execute `ADD x3, x1, x2` tracking pipeline results.
+3. **Data Relocation:** Update states via operational register swap (`x1` $\leftarrow$ `x2`, `x2` $\leftarrow$ `x3`).
+4. **Branch Condition:** Loop sequence tracking until counter depletion triggers branch exit bounds.
 
-## Design Highlights
+### Hardware Prototyping Setup
 
-- Supports full 40-instruction ISA
-- Clean and modular single-cycle datapath
-- Successfully implemented on FPGA hardware
-- Demonstrates real-time computation using Fibonacci sequence
+* **Clock Management:** A custom parameterizable digital counter array steps down high-frequency system clocks to sub-Hz execution speeds for human visual analysis.
+* **Peripherals:** Computed matrix elements inside destination registers are decoded dynamically to drive the multiplexed on-board 4-digit Seven Segment Display.
 
 ---
 
-## Limitations
+## Design Artifacts & Outputs
 
-- Single-cycle design leads to a longer clock period
-- Performance limited by the slowest instruction path
-- No pipelining or parallel execution
-- Increased instruction count slightly complicates control logic
+Upon completion of the automation script, output files and metrics are mapped as shown below:
+
+### Bitstream Destination
+
+```text
+build/riscv_extended_singlecycle.runs/impl_1/riscv_extended_singlecycle.bit
+
+```
+
+### Static Analysis Archiving
+
+```text
+results/
+├── timing_report.txt          # Worst Negative Slack (WNS) and setup/hold timing limits
+├── utilization_report.txt     # Look-Up Table (LUT), Flip-Flop (FF), and IO Pin assignment tables
+├── synthesis_floorplan.png    # Pre-placement design block visualization
+└── physical_layout.png       # Extracted post-route physical layout tracking
+
+```
 
 ---
 
-## Conclusion
+## Constraints & System Limitations
 
-This project demonstrates the design and implementation of a custom single-cycle RISC-V processor with an extended instruction set. By executing a Fibonacci sequence on FPGA hardware, it validates both the datapath and control unit functionality in a practical and observable manner.
+* **Clock Frequency Limitations:** Critical-path delay is bound by the slowest execution sequence (typically the `LW` instruction loop), constraining the maximum system operating frequency ($F_{max}$).
+* **No Pipelining:** Single-cycle instruction processing means resource exploitation remains isolated, with low instruction throughput compared to modern pipelined architectures.
+* **Control Complexity:** Accommodating an extended instruction vocabulary expands the sizing parameters of internal combinational decoding mux structures.
 
 ---
+
+## Author
+
+* **Yashmith**
+* Department of Electronics and Communication Engineering (ECE)
+* Indian Institute of Technology (IIT) Bhubaneswar
+
+```
+
+```
